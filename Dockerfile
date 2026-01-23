@@ -1,22 +1,17 @@
-FROM python:3.11-slim
+# Usa a imagem oficial do Playwright com browsers já instalados
+FROM mcr.microsoft.com/playwright/python:v1.46.0
 
 WORKDIR /app
 
-# Install dependencies for Playwright
-RUN apt-get update && apt-get install -y \
-    wget \
-    gnupg \
-    && rm -rf /var/lib/apt/lists/*
-
+# Dependências Python
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install Playwright browsers
-RUN playwright install chromium
-RUN playwright install-deps chromium
-
+# Copia o código
 COPY main.py .
 
-EXPOSE 8080
+# Ambiente
+ENV PYTHONUNBUFFERED=1
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
+# Arranque FastAPI - Railway define $PORT dinamicamente
+CMD uvicorn main:app --host 0.0.0.0 --port ${PORT:-8080}
